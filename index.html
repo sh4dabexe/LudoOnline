@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Ludo Online – Play with Friends Anywhere</title>
+  <meta name="description" content="Play Ludo online with friends. Create a room, share the link, and enjoy real-time multiplayer Ludo in your browser. Free, no download required." />
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎲</text></svg>" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="css/main.css" />
+</head>
+<body>
+
+  <!-- Background glows -->
+  <div class="bg-glow bg-glow-1"></div>
+  <div class="bg-glow bg-glow-2"></div>
+  <div class="bg-glow bg-glow-3"></div>
+
+  <!-- ─── Header ───────────────────────────────────────────────── -->
+  <header class="header">
+    <div class="logo">
+      <div class="logo-dice">🎲</div>
+      <div class="logo-text">Ludo<span class="logo-accent">Online</span></div>
+    </div>
+    <nav class="nav">
+      <span class="nav-badge">🟢 Free to Play</span>
+    </nav>
+  </header>
+
+  <!-- ─── Hero ─────────────────────────────────────────────────── -->
+  <main class="hero">
+    <!-- Left: Text content -->
+    <div class="hero-left">
+      <div class="hero-badge">
+        <span class="badge-dot"></span>
+        Multiplayer · Real-time · Browser-based
+      </div>
+      <h1 class="hero-title">
+        Play Ludo<br>
+        <span class="hero-gradient">Online with</span><br>
+        Your Friends
+      </h1>
+      <p class="hero-desc">
+        Create a room in seconds, share a link, and play classic Ludo with
+        2–4 players anywhere in the world. No download, no sign-up — just fun!
+      </p>
+      <div class="hero-btns">
+        <button class="btn btn-create" id="createRoomBtn">
+          🎮 &nbsp;Create Room
+        </button>
+        <button class="btn btn-join" id="joinRoomBtn">
+          🔗 &nbsp;Join Room
+        </button>
+      </div>
+      <div class="features">
+        <div class="feature">
+          <div class="feature-icon">⚡</div>
+          <div>
+            <div class="feature-title">Real-time Sync</div>
+            <div class="feature-desc">Firebase powered</div>
+          </div>
+        </div>
+        <div class="feature">
+          <div class="feature-icon">🔗</div>
+          <div>
+            <div class="feature-title">Share a Link</div>
+            <div class="feature-desc">Invite anyone</div>
+          </div>
+        </div>
+        <div class="feature">
+          <div class="feature-icon">🆓</div>
+          <div>
+            <div class="feature-title">Free Forever</div>
+            <div class="feature-desc">No hidden costs</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Right: Board preview -->
+    <div class="hero-right">
+      <div class="board-preview-container">
+        <canvas id="previewBoard" width="320" height="320"></canvas>
+        <div class="board-glow-ring"></div>
+        <span class="floating-token red-token">●</span>
+        <span class="floating-token green-token">●</span>
+        <span class="floating-token blue-token">●</span>
+        <span class="floating-token yellow-token">●</span>
+      </div>
+    </div>
+  </main>
+
+  <!-- ─── Create Room Modal ─────────────────────────────────────── -->
+  <div class="modal-overlay hidden" id="createModal" role="dialog" aria-modal="true" aria-labelledby="createModalTitle">
+    <div class="modal glass-card">
+      <button class="modal-close" id="closeCreate" aria-label="Close">✕</button>
+      <div class="modal-header">
+        <div class="modal-emoji">🎮</div>
+        <h2 class="modal-title" id="createModalTitle">Create a Room</h2>
+        <p class="modal-sub">Set up your game and invite friends</p>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="createName">Your Name</label>
+        <input
+          class="form-input" id="createName" type="text"
+          placeholder="Enter your name..." maxlength="20"
+          autocomplete="off" spellcheck="false"
+        />
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Number of Players</label>
+        <div class="count-picker">
+          <button class="count-opt" data-v="2">2</button>
+          <button class="count-opt" data-v="3">3</button>
+          <button class="count-opt active" data-v="4">4</button>
+        </div>
+        <p class="form-hint">🎨 Each player gets a unique color (Red, Green, Yellow, Blue)</p>
+      </div>
+
+      <button class="btn btn-create btn-full" id="createSubmit">
+        ✨ &nbsp;Create &amp; Get Link
+      </button>
+    </div>
+  </div>
+
+  <!-- ─── Join Room Modal ───────────────────────────────────────── -->
+  <div class="modal-overlay hidden" id="joinModal" role="dialog" aria-modal="true" aria-labelledby="joinModalTitle">
+    <div class="modal glass-card">
+      <button class="modal-close" id="closeJoin" aria-label="Close">✕</button>
+      <div class="modal-header">
+        <div class="modal-emoji">🔗</div>
+        <h2 class="modal-title" id="joinModalTitle">Join a Room</h2>
+        <p class="modal-sub">Enter the room code to join your friends</p>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="joinName">Your Name</label>
+        <input
+          class="form-input" id="joinName" type="text"
+          placeholder="Enter your name..." maxlength="20"
+          autocomplete="off" spellcheck="false"
+        />
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="joinCode">Room Code</label>
+        <input
+          class="form-input code-input" id="joinCode" type="text"
+          placeholder="e.g. ABX92K" maxlength="6"
+          autocomplete="off" spellcheck="false"
+        />
+      </div>
+
+      <button class="btn btn-create btn-full" id="joinSubmit">
+        🚀 &nbsp;Join Game
+      </button>
+    </div>
+  </div>
+
+  <!-- ─── Toast ─────────────────────────────────────────────────── -->
+  <div id="toast" class="toast hidden" role="alert" aria-live="polite"></div>
+
+  <!-- ─── Loading ──────────────────────────────────────────────── -->
+  <div class="loading-overlay hidden" id="loading" role="status">
+    <div class="loader"></div>
+    <p class="loading-text" id="loadingText">Creating room...</p>
+  </div>
+
+  <!-- ─── Firebase ─────────────────────────────────────────────── -->
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+  <script src="js/firebase-config.js"></script>
+
+  <!-- ─── Game code ────────────────────────────────────────────── -->
+  <script src="js/constants.js"></script>
+  <script src="js/board-renderer.js"></script>
+  <script src="js/room-manager.js"></script>
+  <script src="js/main.js"></script>
+
+</body>
+</html>

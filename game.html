@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>Ludo Online – Game Room</title>
+  <meta name="description" content="Play your Ludo Online game room. Roll the dice, move your tokens, and win!" />
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎲</text></svg>" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="css/game.css" />
+</head>
+<body>
+
+<div class="game-wrapper">
+
+  <!-- ═══ TOP BAR ═══════════════════════════════════════════════ -->
+  <header class="topbar">
+    <a class="logo-sm" href="index.html">🎲 Ludo<span>Online</span></a>
+
+    <!-- Timer — top-center, always visible -->
+    <div id="timerWrap" class="timer-wrap hidden">
+      <div class="timer-bar-bg">
+        <div id="timerFill" class="timer-fill"></div>
+      </div>
+      <div id="timerDisplay" class="timer-count">25</div>
+    </div>
+
+    <button class="btn-copy" id="copyLinkBtn">🔗 Copy</button>
+  </header>
+
+  <!-- ═══ ROOM + TURN INFO ══════════════════════════════════════ -->
+  <div class="info-bar">
+    <div class="room-info">
+      <span class="room-label">Room</span>
+      <span class="room-code" id="roomCodeDisplay">------</span>
+    </div>
+    <div id="turnMessage" class="turn-msg">Waiting for game to start…</div>
+  </div>
+
+  <!-- ═══ MAIN GAME AREA ════════════════════════════════════════ -->
+  <div class="game-area">
+
+    <!-- ── Board Column (mobile: full-width / desktop: center) ── -->
+    <div class="board-col">
+
+      <!-- Player names near their corners -->
+      <div class="corner-names">
+        <!-- Top-left: Red -->
+        <div class="corner-name cn-topleft" id="cn-red"></div>
+        <!-- Top-right: Green -->
+        <div class="corner-name cn-topright" id="cn-green"></div>
+      </div>
+
+      <!-- Board + overlays -->
+      <div class="board-wrap" id="boardArea">
+        <div id="boardContainer">
+          <canvas id="gameBoard"></canvas>
+        </div>
+
+        <!-- Sparkle overlay -->
+        <div id="sparkleOverlay" class="sparkle-overlay"></div>
+
+        <!-- Lobby overlay -->
+        <div id="lobbyOverlay">
+          <div class="lobby-card">
+            <h2 class="lobby-title">🎮 Game Lobby</h2>
+            <p class="lobby-sub" id="lobbySub">Waiting for players to join and get ready…</p>
+            <div class="share-row">
+              <input class="share-input" id="shareLink" type="text" readonly />
+              <button class="btn-share" id="shareCopyBtn">📋 Copy</button>
+            </div>
+            <div id="lobbySlots"></div>
+            <div class="lobby-btns">
+              <button class="btn-ready" id="readyBtn">Ready Up</button>
+              <button id="startBtn" style="display:none" disabled>🚀 Start Game</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Winner overlay -->
+        <div id="winnerOverlay" class="hidden"></div>
+      </div>
+
+      <!-- Dice — below board, click to roll -->
+      <div class="dice-overlay" id="diceOverlay" title="Click to roll">
+        <div id="diceResult" class="dice-face" data-value="0">
+          <span class="dp dp-tl"></span>
+          <span class="dp dp-tc"></span>
+          <span class="dp dp-tr"></span>
+          <span class="dp dp-ml"></span>
+          <span class="dp dp-mc"></span>
+          <span class="dp dp-mr"></span>
+          <span class="dp dp-bl"></span>
+          <span class="dp dp-bc"></span>
+          <span class="dp dp-br"></span>
+        </div>
+      </div>
+
+      <!-- Bottom corner names -->
+      <div class="corner-names">
+        <!-- Bottom-left: Blue -->
+        <div class="corner-name cn-bottomleft" id="cn-blue"></div>
+        <!-- Bottom-right: Yellow -->
+        <div class="corner-name cn-bottomright" id="cn-yellow"></div>
+      </div>
+    </div>
+
+    <!-- ── Desktop right chat panel ──────────────────────────── -->
+    <aside class="chat-sidebar" id="chatSidebar">
+      <div class="chat-sidebar-inner">
+        <!-- Player list lives here on desktop -->
+        <div id="playerList" class="player-list-desktop"></div>
+        <div class="panel-title" style="margin-bottom:6px">💬 Chat</div>
+        <div id="chatMessages" class="chat-messages"></div>
+        <div class="chat-emoji-bar">
+          <button class="emoji-btn" data-e="😂">😂</button>
+          <button class="emoji-btn" data-e="👍">👍</button>
+          <button class="emoji-btn" data-e="🎲">🎲</button>
+          <button class="emoji-btn" data-e="🎯">🎯</button>
+          <button class="emoji-btn" data-e="😭">😭</button>
+          <button class="emoji-btn" data-e="🔥">🔥</button>
+          <button class="emoji-btn" data-e="😎">😎</button>
+          <button class="emoji-btn" data-e="🤝">🤝</button>
+        </div>
+        <div class="chat-input-row">
+          <input type="text" id="chatInput" class="chat-input"
+            placeholder="Say something…" maxlength="80" autocomplete="off" />
+          <button id="chatSendBtn" class="btn-chat-send">↑</button>
+        </div>
+      </div>
+    </aside>
+
+  </div><!-- end .game-area -->
+
+  <!-- ═══ MOBILE BOTTOM BAR ══════════════════════════════════════════════════ -->
+  <div class="mobile-bottom-bar">
+    <!-- Mobile-only player strip (mirrored from desktop #playerList by JS) -->
+    <div class="players-strip" id="playerListMobile"></div>
+    <!-- Chat toggle + notification -->
+    <div class="chat-toggle-wrap">
+      <span id="chatNotif" class="chat-notif" aria-live="polite"></span>
+      <button class="btn-chat-toggle" id="chatToggleBtn">💬 Messages</button>
+    </div>
+  </div>
+
+  <!-- ═══ MOBILE CHAT OVERLAY (slide-up sheet) ════════════════════ -->
+  <div class="chat-overlay" id="chatOverlay" aria-hidden="true">
+    <div class="chat-sheet">
+      <div class="chat-sheet-header">
+        <span class="panel-title">💬 Chat</span>
+        <button class="btn-close-chat" id="closeChatBtn" aria-label="Close chat">✕</button>
+      </div>
+      <div id="chatMessagesSheet" class="chat-messages"></div>
+      <div class="chat-emoji-bar sheet-emoji-bar">
+        <button class="emoji-btn" data-e="😂" data-target="sheet">😂</button>
+        <button class="emoji-btn" data-e="👍" data-target="sheet">👍</button>
+        <button class="emoji-btn" data-e="🎲" data-target="sheet">🎲</button>
+        <button class="emoji-btn" data-e="🎯" data-target="sheet">🎯</button>
+        <button class="emoji-btn" data-e="😭" data-target="sheet">😭</button>
+        <button class="emoji-btn" data-e="🔥" data-target="sheet">🔥</button>
+        <button class="emoji-btn" data-e="😎" data-target="sheet">😎</button>
+        <button class="emoji-btn" data-e="🤝" data-target="sheet">🤝</button>
+      </div>
+      <div class="chat-input-row">
+        <input type="text" id="chatInputSheet" class="chat-input"
+          placeholder="Say something…" maxlength="80" autocomplete="off" />
+        <button id="chatSendBtnSheet" class="btn-chat-send">↑</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Hidden roll button kept for JS compatibility -->
+  <button id="rollBtn" style="display:none" disabled></button>
+
+</div><!-- end .game-wrapper -->
+
+<!-- Firebase -->
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+<script src="js/firebase-config.js"></script>
+
+<!-- Game code -->
+<script src="js/sounds.js"></script>
+<script src="js/constants.js"></script>
+<script src="js/board-renderer.js"></script>
+<script src="js/room-manager.js"></script>
+<script src="js/game-page.js"></script>
+
+</body>
+</html>
