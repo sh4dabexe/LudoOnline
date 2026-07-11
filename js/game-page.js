@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Ludo Online — Game Page (v3)
  *
  * Changes vs v2:
@@ -198,7 +198,6 @@ function handleRoomUpdate(room) {
   updateCornerNames(room);
   detectAndAnimateMoves(prev, room);
 
-
   if (room.status === 'waiting') {
     renderLobby(room);
   } else if (room.status === 'playing' || room.status === 'finished') {
@@ -225,41 +224,53 @@ function detectAndAnimateMoves(prev, room) {
       const now = player.tokens[i];
       if (was === now) continue;
 
-      // ── Piece captured — slide it back to yard ──────────────────
+      // ── Piece captured — slide it back to yard (all players see this) ──
       if (now === POS_YARD && was >= 0) {
-        // was is the board position where it was captured
         SFX.capture();
         canvas.classList.add('capture-flash');
         setTimeout(() => canvas.classList.remove('capture-flash'), 450);
 
-        // Animate the captured piece sliding back to its yard spot
         animateCaptureToYard(
           ctx, cellSize, boardRef,
           player.color, uid, i, was,
-          () => { /* board will be in correct state from Firebase update */ }
+          () => { /* board will settle from Firebase state */ }
         );
         continue;
       }
 
-      // ── Normal forward move ─────────────────────────────────────
-      // Only fire sparkle at the destination (skip for MY pieces — those
-      // were already animated by executeMoveToken before Firebase replied).
-      if (uid !== myUid) {
-        const destCell = getTokenCell(player.color, now);
-        if (destCell && now !== POS_YARD) {
-          const boardRect = canvas.getBoundingClientRect();
-          const containerRect = document.getElementById('boardContainer').getBoundingClientRect();
-          const offsetX = boardRect.left - containerRect.left;
-          const offsetY = boardRect.top  - containerRect.top;
-          const px = offsetX + (destCell[1] + 0.5) * cellSize * (boardRect.width / canvas.width);
-          const py = offsetY + (destCell[0] + 0.5) * cellSize * (boardRect.height / canvas.height);
-          spawnSparkle(px, py, COLOR_CONFIG[player.color]?.bg || '#fff');
-        }
+      // ── My own piece — already animated by executeMoveToken, skip ──
+      if (uid === myUid) {
+        if (now === POS_WON) SFX.home();
+        continue;
       }
 
-      // Sound for normal moves
-      if (now === POS_WON) SFX.home();
-      else if (uid !== myUid) SFX.move(); // my piece sound already played
+      // ── Other player's forward move — animate cell-by-cell for everyone ──
+      const animColor    = player.color;
+      const animUid      = uid;
+      const animTokenIdx = i;
+      const animFrom     = was;
+      const animTo       = now;
+
+      animateTokenPath(
+        ctx, cellSize, boardRef, null,
+        animColor, animUid, animTokenIdx,
+        animFrom, animTo,
+        () => {
+          // Sparkle at destination after animation completes
+          const destCell = getTokenCell(animColor, animTo);
+          if (destCell && animTo !== POS_YARD) {
+            const boardRect = canvas.getBoundingClientRect();
+            const containerRect = document.getElementById('boardContainer').getBoundingClientRect();
+            const offsetX = boardRect.left - containerRect.left;
+            const offsetY = boardRect.top  - containerRect.top;
+            const px = offsetX + (destCell[1] + 0.5) * cellSize * (boardRect.width / canvas.width);
+            const py = offsetY + (destCell[0] + 0.5) * cellSize * (boardRect.height / canvas.height);
+            spawnSparkle(px, py, COLOR_CONFIG[animColor]?.bg || '#fff');
+          }
+          if (animTo === POS_WON) SFX.home();
+          else SFX.move();
+        }
+      );
     }
   }
 }
