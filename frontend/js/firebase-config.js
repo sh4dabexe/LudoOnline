@@ -8,7 +8,7 @@
 
 (function() {
   // CONFIGURATION: Replace this with your deployed backend URL (e.g. on Render) when hosting on Vercel
-  const BACKEND_URL = "https://ludo-online-backend.onrender.com";
+  const BACKEND_URL = "https://ludoonline.onrender.com";
 
   const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
   const socketUrl = isLocal ? '' : BACKEND_URL;
