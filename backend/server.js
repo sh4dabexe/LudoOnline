@@ -57,8 +57,8 @@ function deepGet(obj, pathArray) {
   return current;
 }
 
-// Serve static assets from the root directory
-app.use(express.static(__dirname));
+// Serve static assets from the frontend directory
+app.use(express.static(path.join(__dirname, '../frontend')));
 
 // API to check server status or get public config
 app.get('/api/status', (req, res) => {
@@ -67,7 +67,7 @@ app.get('/api/status', (req, res) => {
 
 // Fallback to index.html for frontend routing
 app.get('*', (req, res) => {
-  res.sendFile(path.join(__dirname, 'index.html'));
+  res.sendFile(path.join(__dirname, '../frontend/index.html'));
 });
 
 // Socket.io Connection
